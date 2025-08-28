@@ -58,8 +58,6 @@ VITE_8THWALL_APP_KEY=your_8thwall_app_key_here
     - Unified controls for both invisibility types
     - Collapsible UI panel with smooth animations
     - Mode-specific button states and labels
-  
-  - **uiManagerComponent2**: Alternative UI controller (currently unused)
 
 - **app.js** (`js/app.js`): Application entry point
   - Registers all A-Frame components
@@ -115,8 +113,7 @@ js/
 │   │   ├── invisibilityComponent (person segmentation)
 │   │   └── invisibilityCloakComponent (white cloth detection)
 │   └── ui.js                # UI management with mode switching
-│       ├── uiManagerComponent (main controller)
-│       └── uiManagerComponent2 (alternative, unused)
+│       └── uiManagerComponent (main controller)
 styles/
 └── app.css                  # UI styling with smooth animations
 index.html                   # Main HTML with A-Frame scene
