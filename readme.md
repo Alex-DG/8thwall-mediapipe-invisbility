@@ -7,10 +7,7 @@
 
 *Watch the invisibility effects in action!*
 
-https://github.com/user-attachments/assets/0acc01ca-90d8-4a41-808b-6ce1bbb7e88f
-
-
-Test it [live](https://8thwall-invisbility.vercel.app/) on your mobile phone.
+Test it [live]() on your mobile phone.
 
 ## Development Commands
 
@@ -39,19 +36,33 @@ VITE_8THWALL_APP_KEY=your_8thwall_app_key_here
 
 ### Core Components
 
-- **invisibility.js** (`js/components/invisibility.js`): Main AR invisibility effect component
-  - Uses MediaPipe SelfieSegmentation for real-time person detection
-  - Manages background capture and compositing
-  - Handles canvas overlay for invisibility effect
-  - Provides API methods: `enable()`, `disable()`, `toggleCloak()`, `captureBackground()`
+- **invisibility.js** (`js/components/invisibility.js`): Contains two invisibility components
+  - **invisibilityComponent**: Full body invisibility using MediaPipe SelfieSegmentation
+    - Real-time person detection and segmentation
+    - Background capture and replacement
+    - Advanced edge blurring (0-24px) with multi-pass processing
+    - Canvas overlay system with DPR scaling
+    - API methods: `enable()`, `disable()`, `toggleCloak()`, `captureBackground()`, `setBlur()`, `setMirror()`
+  
+  - **invisibilityCloakComponent**: White cloth invisibility using color-based detection
+    - Multi-pathway white cloth detection algorithm
+    - Morphological operations for gap filling
+    - Configurable white threshold (0-255) and sensitivity
+    - Edge blurring (0-12px) for smooth effects
+    - Same API interface as invisibilityComponent
 
-- **ui.js** (`js/components/ui.js`): UI management component
-  - Connects HTML controls to invisibility component
-  - Manages button states and user interactions
-  - Handles blur slider and mirror toggle
+- **ui.js** (`js/components/ui.js`): Advanced UI management with mode switching
+  - **uiManagerComponent**: Main UI controller with dual-mode support
+    - Dynamic switching between 'full' (person segmentation) and 'cloak' (white cloth) modes
+    - Automatic component management (enable/disable based on active mode)
+    - Unified controls for both invisibility types
+    - Collapsible UI panel with smooth animations
+    - Mode-specific button states and labels
+  
+  - **uiManagerComponent2**: Alternative UI controller (currently unused)
 
 - **app.js** (`js/app.js`): Application entry point
-  - Registers A-Frame components
+  - Registers all A-Frame components
   - Imports CSS styles
 
 ### Tech Stack
@@ -60,27 +71,57 @@ VITE_8THWALL_APP_KEY=your_8thwall_app_key_here
 - **A-Frame**: WebXR framework for 3D/AR scenes
 - **MediaPipe**: Google's ML framework for person segmentation
 - **Vite**: Build tool with HTTPS development server
-- **Canvas API**: Real-time image compositing
+- **Canvas API**: Real-time image compositing and overlay system
 
 ### Key Features
 
-- Real-time person segmentation using MediaPipe
-- Background capture and replacement
-- Configurable edge blur (0-12px)
-- Mirror mode toggle
-- Canvas-based overlay system with proper viewport scaling
+- **Dual Invisibility Modes**:
+  - Full body invisibility (ML-based person segmentation)
+  - White cloth invisibility (color-based detection)
+  - Seamless mode switching without scene reloading
+
+- **Advanced Processing**:
+  - Real-time person segmentation using MediaPipe
+  - Sophisticated white cloth detection with morphological operations
+  - Background capture and replacement
+  - Configurable edge blur (0-24px for person, 0-12px for cloth)
+  - Mirror mode toggle
+  - Device pixel ratio (DPR) scaling for high-density displays
+
+- **User Experience**:
+  - Collapsible control panel with smooth animations
+  - Mode-specific UI states and button management
+  - Responsive design for mobile devices
+  - Real-time feedback and status updates
+
+### Component Architecture
+
+```
+Single A-Frame Scene (ui-manager)
+├── invisibilityComponent (person segmentation)
+├── invisibilityCloakComponent (white cloth detection)
+└── Dynamic Mode Switching
+    ├── Full Mode: invisibilityComponent active
+    └── Cloak Mode: invisibilityCloakComponent active
+```
 
 ## File Structure
 
 ```
 js/
-├── app.js              # Main entry point
+├── app.js                    # Main entry point, component registration
 ├── components/
-│   ├── invisibility.js # Core AR invisibility logic
-│   └── ui.js           # UI controls management
+│   ├── invisibility.js      # Both invisibility components
+│   │   ├── invisibilityComponent (person segmentation)
+│   │   └── invisibilityCloakComponent (white cloth detection)
+│   └── ui.js                # UI management with mode switching
+│       ├── uiManagerComponent (main controller)
+│       └── uiManagerComponent2 (alternative, unused)
 styles/
-└── app.css             # UI styling
-index.html              # Main HTML with A-Frame scene
+└── app.css                  # UI styling with smooth animations
+index.html                   # Main HTML with A-Frame scene
+demo/
+└── demo_video.mp4          # Demo video
 ```
 
 ## Development Notes
