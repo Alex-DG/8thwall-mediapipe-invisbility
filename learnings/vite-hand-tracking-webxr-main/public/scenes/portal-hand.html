@@ -1,0 +1,111 @@
+<!-- Loading UI Overlay -->
+<div id="portal-hand-loading-overlay" class="portal-hand-loading-overlay">
+  <div class="portal-hand-spinner-container">
+    <div class="portal-hand-spinner"></div>
+  </div>
+  <div id="portal-hand-loading-text" class="portal-hand-loading-text">
+    Loading... 0%
+  </div>
+  <div class="portal-hand-progress-container">
+    <div
+      id="portal-hand-loading-progress-bar"
+      class="portal-hand-progress-bar"
+    ></div>
+  </div>
+</div>
+
+<style>
+  .portal-hand-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial,
+      sans-serif;
+    transition: opacity 0.3s ease;
+  }
+
+  .portal-hand-loading-overlay.hidden {
+    opacity: 0;
+    display: none;
+    pointer-events: none;
+  }
+
+  .portal-hand-spinner-container {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+  }
+
+  .portal-hand-spinner {
+    width: 100%;
+    height: 100%;
+    border: 3px solid rgba(0, 255, 255, 0.3);
+    border-top-color: #00ffff;
+    border-radius: 50%;
+    animation: portal-hand-spin 1s linear infinite;
+  }
+
+  .portal-hand-loading-text {
+    color: #00ffff;
+    font-size: 18px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .portal-hand-progress-container {
+    width: 250px;
+    height: 4px;
+    background: rgba(51, 51, 51, 0.8);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .portal-hand-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #00ffff;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  }
+
+  @keyframes portal-hand-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+<a-scene
+  mediapipe-portal-hand
+  scene-portal-hand
+  landing-page
+  xrextras-loading
+  xrextras-runtime-error
+  renderer="colorManagement:true"
+  xrweb="allowedDevices: any"
+>
+  <a-assets> </a-assets>
+
+  <a-camera id="camera" position="0 0 0"> </a-camera>
+
+  <a-entity
+    light="type: directional; intensity: 0.6; castShadow: true;"
+    position="1 2 1"
+  >
+  </a-entity>
+
+  <a-light type="ambient" intensity="0.6"></a-light>
+
+  <!-- Oval Gesture Detector -->
+  <a-entity
+    oval-gesture-detector="planeColor: #FFFFFF; planeOpacity: 1.0; touchThreshold: 0.05"
+  ></a-entity>
+</a-scene>

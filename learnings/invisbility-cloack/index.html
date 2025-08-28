@@ -1,0 +1,258 @@
+<!-- <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Webcam Invisibility Cloak (JS + MediaPipe)</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      :root {
+        --w: 960;
+        --h: 540;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      }
+      body {
+        margin: 0;
+        background: #0b0b10;
+        color: #eaeaea;
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+      }
+      .app {
+        width: min(96vw, calc(var(--w) * 1px));
+      }
+      .stage {
+        position: relative;
+        background: #111;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+      }
+      canvas,
+      video {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      video {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .controls {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 14px;
+        background: #12121a;
+        border-radius: 10px;
+        margin-top: 12px;
+      }
+      button,
+      input,
+      label {
+        font: inherit;
+      }
+      button {
+        background: #4f46e5;
+        color: white;
+        border: 0;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #2a2a35;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .spacer {
+        flex: 1 1 auto;
+      }
+      .hint {
+        opacity: 0.7;
+        font-size: 0.9rem;
+      }
+    </style>
+    <!-- MediaPipe (legacy solutions) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="app">
+      <div class="stage" style="aspect-ratio: 16/9">
+        <video class="input_video" playsinline muted></video>
+        <canvas class="output_canvas" width="960" height="540"></canvas>
+      </div>
+      <div class="controls">
+        <button id="startBtn">Start camera</button>
+        <button id="bgBtn" class="secondary" disabled>
+          Capture background
+        </button>
+        <button id="toggleBtn" class="secondary" disabled>Toggle cloak</button>
+        <label
+          >Edge blur
+          <input id="blur" type="range" min="0" max="12" value="4" step="1" />
+        </label>
+        <label><input id="mirror" type="checkbox" checked /> Mirror view</label>
+        <div class="spacer"></div>
+        <span class="hint"
+          >Tip: click “Capture background”, step out of frame for best
+          results.</span
+        >
+      </div>
+    </div>
+
+    <script>
+      // Elements
+      const videoEl = document.querySelector('.input_video')
+      const canvasEl = document.querySelector('.output_canvas')
+      const ctx = canvasEl.getContext('2d', { willReadFrequently: false })
+
+      const startBtn = document.getElementById('startBtn')
+      const bgBtn = document.getElementById('bgBtn')
+      const toggleBtn = document.getElementById('toggleBtn')
+      const blurSlider = document.getElementById('blur')
+      const mirrorChk = document.getElementById('mirror')
+
+      // Offscreen background (the "clean plate")
+      const bgCanvas = document.createElement('canvas')
+      const bgCtx = bgCanvas.getContext('2d')
+      let bgReady = false
+
+      // State
+      let cloakEnabled = true
+      let camera = null
+
+      // MediaPipe SelfieSegmentation
+      const selfieSegmentation = new SelfieSegmentation({
+        locateFile: (file) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+      })
+      selfieSegmentation.setOptions({ modelSelection: 1 }) // 0=general, 1=landscape
+      selfieSegmentation.onResults(onResults)
+
+      // Size helpers
+      function ensureSizes(width, height) {
+        if (canvasEl.width !== width) {
+          canvasEl.width = width
+          canvasEl.height = height
+          bgCanvas.width = width
+          bgCanvas.height = height
+        }
+      }
+
+      // Draw pipeline
+      function onResults(results) {
+        const w = results.segmentationMask.width
+        const h = results.segmentationMask.height
+        ensureSizes(w, h)
+
+        ctx.save()
+        ctx.clearRect(0, 0, w, h)
+
+        // Optional mirror (applies to all subsequent draws)
+        if (mirrorChk.checked) {
+          ctx.translate(w, 0)
+          ctx.scale(-1, 1)
+        }
+
+        // Draw the live frame first
+        if (results.image) {
+          ctx.globalCompositeOperation = 'source-over'
+          ctx.drawImage(results.image, 0, 0, w, h)
+        }
+
+        if (cloakEnabled && bgReady) {
+          // Feather the mask to soften edges
+          ctx.filter = `blur(${+blurSlider.value}px)`
+          // Cut the PERSON out of the current frame
+          ctx.globalCompositeOperation = 'destination-out'
+          ctx.drawImage(results.segmentationMask, 0, 0, w, h)
+
+          // Put the background behind the hole
+          ctx.filter = 'none'
+          ctx.globalCompositeOperation = 'destination-over'
+          ctx.drawImage(bgCanvas, 0, 0, w, h)
+        }
+
+        ctx.restore()
+      }
+
+      // Start camera (uses MediaPipe's Camera helper)
+      startBtn.onclick = async () => {
+        startBtn.disabled = true
+        try {
+          camera = new Camera(videoEl, {
+            onFrame: async () => {
+              // Send the current video frame to the segmenter
+              await selfieSegmentation.send({ image: videoEl })
+            },
+            // Lower this to 640x360 if your device struggles
+            width: 960,
+            height: 540,
+          })
+          await camera.start()
+
+          bgBtn.disabled = false
+          toggleBtn.disabled = false
+        } catch (err) {
+          alert(
+            'Camera failed to start. Make sure you are on HTTPS or localhost and allowed camera access.\n\n' +
+              err
+          )
+          startBtn.disabled = false
+        }
+      }
+
+      // Capture a clean background plate
+      bgBtn.onclick = () => {
+        // Quick 2s countdown so you can step out of frame
+        bgBtn.disabled = true
+        bgBtn.textContent = 'Capturing in 2…'
+        setTimeout(() => {
+          bgBtn.textContent = 'Capturing in 1…'
+          setTimeout(() => {
+            // Draw from the raw video element (orientation is handled during composite)
+            bgCtx.drawImage(videoEl, 0, 0, bgCanvas.width, bgCanvas.height)
+            bgReady = true
+            bgBtn.textContent = 'Re-capture background'
+            bgBtn.disabled = false
+          }, 1000)
+        }, 1000)
+      }
+
+      toggleBtn.onclick = () => {
+        cloakEnabled = !cloakEnabled
+        toggleBtn.textContent = cloakEnabled ? 'Disable cloak' : 'Enable cloak'
+      }
+
+      // Keep button label in sync initially
+      toggleBtn.textContent = cloakEnabled ? 'Disable cloak' : 'Enable cloak'
+    </script>
+  </body>
+</html>

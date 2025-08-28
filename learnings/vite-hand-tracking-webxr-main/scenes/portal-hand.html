@@ -1,0 +1,26 @@
+<a-scene
+  mediapipe-portal-hand
+  scene-portal-hand
+  landing-page
+  xrextras-loading
+  xrextras-runtime-error
+  renderer="colorManagement:true"
+  xrweb="allowedDevices: any"
+>
+  <a-assets> </a-assets>
+
+  <a-camera id="camera" position="0 0 0"> </a-camera>
+
+  <a-entity
+    light="type: directional; intensity: 0.6; castShadow: true;"
+    position="1 2 1"
+  >
+  </a-entity>
+
+  <a-light type="ambient" intensity="0.6"></a-light>
+
+  <!-- Oval Gesture Detector -->
+  <a-entity
+    oval-gesture-detector="planeColor: #FFFFFF; planeOpacity: 1.0; touchThreshold: 0.05"
+  ></a-entity>
+</a-scene>

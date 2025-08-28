@@ -1,0 +1,160 @@
+<!-- Landing Page -->
+<div class="webxr-landing" id="landingPage">
+  <div class="landing-content">
+    <h1 class="landing-title">🥽</h1>
+    <p class="landing-subtitle">WebXR Hand Tracking Experience</p>
+    <button class="vr-button" id="enterVRBtn">Enter VR</button>
+  </div>
+</div>
+
+<a-scene
+  enter-xr
+  webxr="
+    referenceSpaceType: bounded-floor;
+    requiredFeatures: bounded-floor, local-floor;
+    optionalFeatures: hand-tracking
+  "
+  renderer="colorManagement: true"
+  vr-mode-ui="enabled: false"
+  gltf-model="dracoDecoderPath: https://cdn.8thwall.com/web/aframe/draco-decoder/"
+  embedded
+>
+  <a-assets>
+    <a-asset-item
+      id="sunflowerModel"
+      src="/models/sunflower_edit-v2.glb"
+    ></a-asset-item>
+  </a-assets>
+
+  <!-- Realistic Sky -->
+  <a-entity
+    cyberpunk-sky="
+      topColor: #87CEEB;
+      horizonColor: #E0F6FF;
+      bottomColor: #98D8E8;
+      exponent: 0.8
+    "
+  ></a-entity>
+
+  <!-- Cloud System -->
+  <a-entity
+    cloud-system="
+      count: 40;
+      minRadius: 30;
+      maxRadius: 80;
+      minHeight: 20;
+      maxHeight: 40;
+      minScale: 1;
+      maxScale: 3;
+      opacity: 0.7;
+      speed: 1;
+      cloudDetail: 9
+    "
+  ></a-entity>
+
+  <!-- Sun System -->
+  <a-entity
+    sun-system="
+      position: -20 45 -80;
+      coreSize: 10;
+      glowSize: 10.2;
+      intensity: 1.8
+    "
+  ></a-entity>
+
+  <!-- Camera -->
+  <a-camera id="camera" position="0 1.6 0"></a-camera>
+
+  <!-- Hands using A-Frame's built-in hand tracking -->
+  <a-entity
+    id="leftHand"
+    hand-tracking-controls="hand: left; modelStyle: mesh"
+    hand-xr-draw="hand: left"
+    hand-xr-wrist-menu="hand: left"
+    hand-xr-sphere-spawner="hand: left"
+    hand-xr-pinch-detector="hand: left"
+  ></a-entity>
+  <a-entity
+    id="rightHand"
+    hand-tracking-controls="hand: right; modelStyle: mesh"
+    hand-xr-draw="hand: right"
+    hand-xr-wrist-menu="hand: right"
+    hand-xr-sphere-spawner="hand: right"
+    hand-xr-pinch-detector="hand: right"
+  ></a-entity>
+
+  <!-- Directional Light -->
+  <a-entity
+    light="type: directional; intensity: 0.6; castShadow: true;"
+    position="1 2 1"
+  ></a-entity>
+
+  <!-- Ambient Light -->
+  <a-light type="ambient" intensity="0.6"></a-light>
+
+  <!-- <a-entity
+    animation="property: position; to: 0 2 -2; dur: 24000; easing: easeOutQuad; loop: true; dir: alternate"
+    wobbly-sphere="amplitude: 10.0; intensity: 5.0; noiseStrength: 0.05; noiseDensity: 4.0; frequency: 1.0"
+    position="0 0.7 -2"
+  ></a-entity> -->
+
+  <!-- Path sphere spawner (manages sphere animations on drawing paths) -->
+  <a-entity path-sphere-spawner></a-entity>
+
+  <!-- Weather System -->
+  <a-entity
+    weather-system="
+      startWeather: sunny;
+      transitionDuration: 10000;
+      minWeatherDuration: 8000;
+      maxWeatherDuration: 16000
+    "
+  ></a-entity>
+
+  <!-- Grass Field -->
+  <a-entity
+    grass-field="
+      count: 5500;
+      patchSize: 5;
+      width: 0.6;
+      height: 0.5;
+      segments: 6;
+      windSpeed: 0.5;
+      debug: false
+    "
+    position="0 0 0"
+  ></a-entity>
+
+  <!-- Growth Particles -->
+  <a-entity
+    growth-particles="
+      count: 500;
+      radius: 5;
+      particleSize: 0.15;
+      duration: 10000;
+      delay: 0;
+      speedY: 0.3
+    "
+    position="0 0 0"
+  ></a-entity>
+
+  <!-- <a-entity
+    id="model"
+    gltf-model="#sunflowerModel"
+    scale="1 1 1"
+    position="0 0 -2"
+    rotation="0 -150 0"
+    shadow
+  >
+  </a-entity> -->
+
+  <!-- Ground plane with texture and smooth fade -->
+  <a-cylinder
+    rotation="0 0 0"
+    radius="5"
+    height="0.1"
+    position="0 -0.05 0"
+    segments-radial="64"
+    faded-ground="radius: 5; fadeStart: 0.5; texture: /textures/ground.png; repeat: 2 2"
+  ></a-cylinder>
+</a-scene>
